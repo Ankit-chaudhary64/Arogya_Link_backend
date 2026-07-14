@@ -88,9 +88,10 @@ class CriticalPredictionTests(APITestCase):
                 priority=priority,
             )
 
+    @patch('health.views.is_fast2sms_configured', return_value=True)
     @patch('health.views.send_fast2sms_sms')
     @patch('health.views.ml_utils.predict_heart_risk', return_value='Critical')
-    def test_critical_prediction_sends_sms_and_returns_dial_payload(self, _mock_predict, mock_send_sms):
+    def test_critical_prediction_sends_sms_and_returns_dial_payload(self, _mock_predict, mock_send_sms, _mock_config):
         mock_send_sms.return_value = {
             'provider': 'fast2sms',
             'success': True,
@@ -121,9 +122,10 @@ class CriticalPredictionTests(APITestCase):
         self.assertEqual(response.data['missing_requirements']['dialer'], [])
         mock_send_sms.assert_called_once()
 
+    @patch('health.views.is_fast2sms_configured', return_value=True)
     @patch('health.views.send_fast2sms_sms')
     @patch('health.views.ml_utils.predict_heart_risk', return_value='Critical')
-    def test_prediction_runtime_device_state_disables_sms_without_live_location(self, _mock_predict, mock_send_sms):
+    def test_prediction_runtime_device_state_disables_sms_without_live_location(self, _mock_predict, mock_send_sms, _mock_config):
         response = self.client.post(
             '/api/health/predict/',
             {
@@ -142,9 +144,10 @@ class CriticalPredictionTests(APITestCase):
         self.assertEqual(response.data['missing_requirements']['dialer'], [])
         mock_send_sms.assert_not_called()
 
+    @patch('health.views.is_fast2sms_configured', return_value=True)
     @patch('health.views.send_fast2sms_sms')
     @patch('health.views.ml_utils.predict_heart_risk', return_value='Critical')
-    def test_critical_messages_are_repeated_after_one_minute_not_every_request(self, _mock_predict, mock_send_sms):
+    def test_critical_messages_are_repeated_after_one_minute_not_every_request(self, _mock_predict, mock_send_sms, _mock_config):
         mock_send_sms.return_value = {
             'provider': 'fast2sms',
             'success': True,
@@ -167,9 +170,10 @@ class CriticalPredictionTests(APITestCase):
         self.assertGreater(second_response.data['alert_repeat']['seconds_until_next_dispatch'], 0)
         self.assertEqual(mock_send_sms.call_count, 1)
 
+    @patch('health.views.is_fast2sms_configured', return_value=True)
     @patch('health.views.send_fast2sms_sms', side_effect=SMSDeliveryError('Invalid Authentication', status_code=401))
     @patch('health.views.ml_utils.predict_heart_risk', return_value='Critical')
-    def test_failed_sms_delivery_is_reported_without_starting_cooldown(self, _mock_predict, _mock_send_sms):
+    def test_failed_sms_delivery_is_reported_without_starting_cooldown(self, _mock_predict, _mock_send_sms, _mock_config):
         first_response = self.client.post('/api/health/predict/', {}, format='json')
         second_response = self.client.post('/api/health/predict/', {}, format='json')
 

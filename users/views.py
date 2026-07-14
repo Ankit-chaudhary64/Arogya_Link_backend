@@ -17,7 +17,7 @@ from .serializers import UserSerializer, ProfileSerializer, DeviceStateSerialize
 
 
 def generate_otp():
-    return f"{random.randint(10000, 99999)}"
+    return f"{random.randint(100000, 999999)}"
 
 
 def validate_user_password(password, user=None):
@@ -33,6 +33,26 @@ def send_otp_email(email, subject, message, otp_code):
 
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
     send_mail(subject, message, from_email, [email], fail_silently=False)
+
+
+def get_otp_delivery_method():
+    backend_path = getattr(settings, 'EMAIL_BACKEND', '')
+    if backend_path == 'django.core.mail.backends.console.EmailBackend':
+        return 'console'
+    return 'email'
+
+
+def build_otp_delivery_payload(email_detail, console_detail, otp_code):
+    delivery_method = get_otp_delivery_method()
+    payload = {
+        'detail': email_detail if delivery_method == 'email' else console_detail,
+        'delivery_method': delivery_method,
+    }
+
+    if delivery_method == 'console' and getattr(settings, 'DEBUG', False):
+        payload['debug_otp'] = otp_code
+
+    return payload
 
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -74,7 +94,14 @@ class RegisterView(APIView):
         except Exception as e:
             return Response({'error': f'Failed to send OTP email. {e}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response({'detail': 'OTP sent to email and echoed in server console. Verify it with /verify-otp/'}, status=status.HTTP_202_ACCEPTED)
+        return Response(
+            build_otp_delivery_payload(
+                'OTP sent to email. Verify it with /verify-otp/.',
+                'Email service is not configured on the server. Use the development OTP shown in the app or backend console to continue registration.',
+                otp_code,
+            ),
+            status=status.HTTP_202_ACCEPTED,
+        )
 
 class VerifyOTPView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -155,7 +182,14 @@ class ResendOTPView(APIView):
         except Exception as e:
             return Response({'error': f'Failed to resend OTP email. {e}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response({'detail': 'OTP resent to email.'}, status=status.HTTP_200_OK)
+        return Response(
+            build_otp_delivery_payload(
+                'OTP resent to email.',
+                'Email service is not configured on the server. Use the development OTP shown in the app or backend console.',
+                otp_record.code,
+            ),
+            status=status.HTTP_200_OK,
+        )
 
 class ForgotPasswordRequestView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -196,7 +230,14 @@ class ForgotPasswordRequestView(APIView):
         except Exception as e:
             return Response({'error': f'Failed to send OTP email. {e}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response({'detail': 'OTP sent to email. Verify it with /reset-password/.'}, status=status.HTTP_202_ACCEPTED)
+        return Response(
+            build_otp_delivery_payload(
+                'OTP sent to email. Verify it with /reset-password/.',
+                'Email service is not configured on the server. Use the development OTP shown in the app or backend console to reset your password.',
+                otp_code,
+            ),
+            status=status.HTTP_202_ACCEPTED,
+        )
 
 class ResetPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -204,7 +245,7 @@ class ResetPasswordView(APIView):
     def post(self, request):
         email = request.data.get('email')
         otp = request.data.get('otp')
-        new_password = request.data.get('password')
+        new_password = request.data.get('password') or request.data.get('new_password')
 
         if not email or not otp or not new_password:
             return Response({'error': 'Email, OTP, and new password are required.'}, status=status.HTTP_400_BAD_REQUEST)

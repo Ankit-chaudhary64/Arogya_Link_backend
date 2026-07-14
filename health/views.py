@@ -2,7 +2,7 @@ from datetime import timedelta
 from urllib.parse import quote
 
 from django.utils import timezone
-from rest_framework import status, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -283,6 +283,49 @@ class ReminderViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class SendSMSView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        message = (request.data.get('message') or '').strip()
+        phone_number = request.data.get('phone_number')
+        phone_numbers = request.data.get('phone_numbers')
+
+        if not message:
+            return Response({'error': 'Message is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        numbers = phone_numbers if isinstance(phone_numbers, list) else [phone_number]
+        normalized_numbers = [str(number).strip() for number in numbers if str(number or '').strip()]
+        if not normalized_numbers:
+            return Response({'error': 'At least one phone number is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not is_fast2sms_configured():
+            return Response(
+                {'error': 'Fast2SMS API key is not configured on the backend.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        try:
+            delivery = send_fast2sms_sms(message, normalized_numbers)
+        except SMSDeliveryError as exc:
+            return Response(
+                {
+                    'error': str(exc),
+                    'status_code': exc.status_code,
+                    'details': exc.payload,
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        return Response(
+            {
+                'detail': 'SMS sent successfully.',
+                'delivery': delivery,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class PredictionView(APIView):

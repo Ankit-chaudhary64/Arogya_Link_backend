@@ -2,8 +2,9 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
+from django.test import override_settings
 
-from .models import Profile
+from .models import EmailOTP, Profile
 
 
 class ProfileDeviceStateTests(APITestCase):
@@ -46,3 +47,37 @@ class ProfileDeviceStateTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('location', response.data)
+
+
+class OTPDeliveryTests(APITestCase):
+    @override_settings(DEBUG=True, EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend')
+    def test_register_returns_debug_otp_when_console_backend_is_used(self):
+        response = self.client.post(
+            '/api/users/register/',
+            {'email': 'otp-console@example.com'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(response.data['delivery_method'], 'console')
+        self.assertIn('debug_otp', response.data)
+        self.assertEqual(len(response.data['debug_otp']), 6)
+        self.assertTrue(
+            EmailOTP.objects.filter(
+                email='otp-console@example.com',
+                purpose='register',
+                code=response.data['debug_otp'],
+            ).exists()
+        )
+
+    @override_settings(DEBUG=True, EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_register_marks_non_console_backends_as_email_delivery(self):
+        response = self.client.post(
+            '/api/users/register/',
+            {'email': 'otp-email@example.com'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(response.data['delivery_method'], 'email')
+        self.assertNotIn('debug_otp', response.data)

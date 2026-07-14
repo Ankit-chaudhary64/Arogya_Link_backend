@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class MedicalReport(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='medical_reports')
@@ -60,11 +61,18 @@ class Reminder(models.Model):
         ('Medicine', 'Medicine'),
         ('Checkup', 'Checkup'),
     )
+    FREQUENCY_TYPE = (
+        ('once', 'Once'),
+        ('daily', 'Daily'),
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reminders')
     title = models.CharField(max_length=200)
     reminder_type = models.CharField(max_length=20, choices=REMINDER_TYPE)
     time = models.DateTimeField()
     is_completed = models.BooleanField(default=False)
+    frequency = models.CharField(max_length=10, choices=FREQUENCY_TYPE, default='once')
+    duration_days = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.title} for {self.user.username}"

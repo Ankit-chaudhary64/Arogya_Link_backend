@@ -60,7 +60,7 @@ class EmailOTP(models.Model):
 
     email = models.EmailField()
     purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES, default='register')
-    code = models.CharField(max_length=5)
+    code = models.CharField(max_length=6)
     created_at = models.DateTimeField(default=timezone.now)
     last_sent_at = models.DateTimeField(default=timezone.now)
     is_used = models.BooleanField(default=False)

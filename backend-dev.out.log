@@ -1,0 +1,59 @@
+Performing system checks...
+
+System check identified no issues (0 silenced).
+July 12, 2026 - 00:25:10
+Django version 6.0.3, using settings 'arogyalink_backend.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CTRL-BREAK.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/6.0/howto/deployment/
+[OTP] rajk0066kumar@gmail.com -> 177070 (ArogyaLink Registration OTP)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Subject: ArogyaLink Registration OTP
+From: ArogyaLink <no-reply@arogya.com>
+To: rajk0066kumar@gmail.com
+Date: Sat, 11 Jul 2026 19:00:02 +0000
+Message-ID: <178379640238.16064.18160536872403144824@artistakc>
+
+Your ArogyaLink registration OTP is 177070. It expires in 15 minutes.
+
+-------------------------------------------------------------------------------
+[OTP] rajk0066kumar@gmail.com -> 260398 (ArogyaLink Registration OTP)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Subject: ArogyaLink Registration OTP
+From: ArogyaLink <no-reply@arogya.com>
+To: rajk0066kumar@gmail.com
+Date: Sat, 11 Jul 2026 19:01:17 +0000
+Message-ID: <178379647716.16064.6998805542611702865@artistakc>
+
+Your ArogyaLink registration OTP is 260398. It expires in 15 minutes.
+
+-------------------------------------------------------------------------------
+Performing system checks...
+
+System check identified no issues (0 silenced).
+July 12, 2026 - 00:47:00
+Django version 6.0.3, using settings 'arogyalink_backend.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CTRL-BREAK.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/6.0/howto/deployment/
+[OTP] rajk0066kumar@gmail.com -> 787274 (ArogyaLink Registration OTP)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+Subject: ArogyaLink Registration OTP
+From: ArogyaLink <no-reply@arogya.com>
+To: rajk0066kumar@gmail.com
+Date: Sat, 11 Jul 2026 19:40:06 +0000
+Message-ID: <178379880671.21156.6171893320306909526@artistakc>
+
+Your ArogyaLink registration OTP is 787274. It expires in 15 minutes.
+
+-------------------------------------------------------------------------------
